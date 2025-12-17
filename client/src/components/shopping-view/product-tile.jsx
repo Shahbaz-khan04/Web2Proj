@@ -1,7 +1,7 @@
-import { Card, CardContent, CardFooter } from "../ui/card";
-import { Button } from "../ui/button";
-import { brandOptionsMap, categoryOptionsMap } from "@/config";
+import { Card, CardContent } from "../ui/card";
+import { categoryOptionsMap } from "@/config";
 import { Badge } from "../ui/badge";
+import { Plus } from "lucide-react";
 
 function ShoppingProductTile({
   product,
@@ -9,7 +9,7 @@ function ShoppingProductTile({
   handleAddtoCart,
 }) {
   return (
-    <Card className="w-full max-w-sm mx-auto">
+    <Card className="w-full max-w-sm mx-auto group">
       <div onClick={() => handleGetProductDetails(product?._id)}>
         <div className="relative">
           <img
@@ -30,15 +30,26 @@ function ShoppingProductTile({
               Sale
             </Badge>
           ) : null}
+
+          {/* Add to Cart Icon */}
+          {product?.totalStock > 0 && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleAddtoCart(product?._id, product?.totalStock);
+              }}
+              className="absolute bottom-2 right-2 bg-primary text-primary-foreground rounded-full p-3 shadow-lg hover:scale-110 transition-all duration-300 opacity-0 group-hover:opacity-100"
+              aria-label="Add to cart"
+            >
+              <Plus className="h-5 w-5" />
+            </button>
+          )}
         </div>
         <CardContent className="p-4">
-          <h2 className="text-xl font-bold mb-2">{product?.title}</h2>
+          <h2 className="text-2xl font-bold mb-2">{product?.title}</h2>
           <div className="flex justify-between items-center mb-2">
             <span className="text-[16px] text-muted-foreground">
               {categoryOptionsMap[product?.category]}
-            </span>
-            <span className="text-[16px] text-muted-foreground">
-              {brandOptionsMap[product?.brand]}
             </span>
           </div>
           <div className="flex justify-between items-center mb-2">
@@ -57,20 +68,6 @@ function ShoppingProductTile({
           </div>
         </CardContent>
       </div>
-      <CardFooter>
-        {product?.totalStock === 0 ? (
-          <Button className="w-full opacity-60 cursor-not-allowed">
-            Out Of Stock
-          </Button>
-        ) : (
-          <Button
-            onClick={() => handleAddtoCart(product?._id, product?.totalStock)}
-            className="w-full"
-          >
-            Add to cart
-          </Button>
-        )}
-      </CardFooter>
     </Card>
   );
 }

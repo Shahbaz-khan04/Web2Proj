@@ -50,7 +50,7 @@ function ProductImageUpload({
     const data = new FormData();
     data.append("my_file", imageFile);
     const response = await axios.post(
-      "http://localhost:5000/api/admin/products/upload-image",
+      "http://localhost:5001/api/admin/products/upload-image",
       data
     );
     console.log(response, "response");
@@ -73,9 +73,7 @@ function ProductImageUpload({
       <div
         onDragOver={handleDragOver}
         onDrop={handleDrop}
-        className={`${
-          isEditMode ? "opacity-60" : ""
-        } border-2 border-dashed rounded-lg p-4`}
+        className="border-2 border-dashed rounded-lg p-4"
       >
         <Input
           id="image-upload"
@@ -83,18 +81,27 @@ function ProductImageUpload({
           className="hidden"
           ref={inputRef}
           onChange={handleImageFileChange}
-          disabled={isEditMode}
         />
         {!imageFile ? (
-          <Label
-            htmlFor="image-upload"
-            className={`${
-              isEditMode ? "cursor-not-allowed" : ""
-            } flex flex-col items-center justify-center h-32 cursor-pointer`}
-          >
-            <UploadCloudIcon className="w-10 h-10 text-muted-foreground mb-2" />
-            <span>Drag & drop or click to upload image</span>
-          </Label>
+          uploadedImageUrl && isEditMode ? (
+            <div className="flex flex-col items-center justify-center">
+              <img src={uploadedImageUrl} alt="Product" className="h-32 w-full object-contain rounded mb-2" />
+              <Label
+                htmlFor="image-upload"
+                className="text-sm text-primary cursor-pointer hover:underline"
+              >
+                Click to change image
+              </Label>
+            </div>
+          ) : (
+            <Label
+              htmlFor="image-upload"
+              className="flex flex-col items-center justify-center h-32 cursor-pointer"
+            >
+              <UploadCloudIcon className="w-10 h-10 text-muted-foreground mb-2" />
+              <span>Drag & drop or click to upload image</span>
+            </Label>
+          )
         ) : imageLoadingState ? (
           <Skeleton className="h-10 bg-gray-100" />
         ) : (

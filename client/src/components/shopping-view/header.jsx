@@ -54,7 +54,7 @@ function MenuItems() {
       {shoppingViewHeaderMenuItems.map((menuItem) => (
         <Label
           onClick={() => handleNavigate(menuItem)}
-          className="text-sm font-medium cursor-pointer"
+          className="text-sm font-medium cursor-pointer transition-all duration-300 hover:text-primary hover:scale-105"
           key={menuItem.id}
         >
           {menuItem.label}
@@ -82,7 +82,7 @@ function HeaderRightContent() {
   console.log(cartItems, "sangam");
 
   return (
-    <div className="flex lg:items-center lg:flex-row flex-col gap-4">
+    <div className="flex lg:items-center flex-row gap-4">
       <Sheet open={openCartSheet} onOpenChange={() => setOpenCartSheet(false)}>
         <Button
           onClick={() => setOpenCartSheet(true)}
@@ -139,25 +139,32 @@ function ShoppingHeader() {
     <header className="sticky top-0 z-40 w-full border-b bg-background">
       <div className="flex h-16 items-center justify-between px-4 md:px-6">
         <Link to="/shop/home" className="flex items-center gap-2">
-          <HousePlug className="h-6 w-6" />
-          <span className="font-bold">Ecommerce</span>
+          <img src="/logo.jpeg" className="h-14 w-14" />
+          <span className="font-bold">Vibe District</span>
         </Link>
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="outline" size="icon" className="lg:hidden">
-              <Menu className="h-6 w-6" />
-              <span className="sr-only">Toggle header menu</span>
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-full max-w-xs">
-            <MenuItems />
-            <HeaderRightContent />
-          </SheetContent>
-        </Sheet>
+
+        {/* Mobile: Cart and Profile icons + Hamburger */}
+        <div className="flex lg:hidden items-center gap-4">
+          <HeaderRightContent />
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="icon">
+                <Menu className="h-6 w-6" />
+                <span className="sr-only">Toggle header menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-auto max-w-[280px] h-auto">
+              <MenuItems />
+            </SheetContent>
+          </Sheet>
+        </div>
+
+        {/* Desktop: Menu Items */}
         <div className="hidden lg:block">
           <MenuItems />
         </div>
 
+        {/* Desktop: Cart and Profile */}
         <div className="hidden lg:block">
           <HeaderRightContent />
         </div>

@@ -5,17 +5,18 @@ import UserCartItemsContent from "@/components/shopping-view/cart-items-content"
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { createNewOrder } from "@/store/shop/order-slice";
-import { Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
+import { fetchCartItems } from "@/store/shop/cart-slice";
 
 function ShoppingCheckout() {
   const { cartItems } = useSelector((state) => state.shopCart);
   const { user } = useSelector((state) => state.auth);
-  const { approvalURL } = useSelector((state) => state.shopOrder);
   const [currentSelectedAddress, setCurrentSelectedAddress] = useState(null);
-  const [isPaymentStart, setIsPaymemntStart] = useState(false);
+  const [isProcessingOrder, setIsProcessingOrder] = useState(false);
   const dispatch = useDispatch();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   console.log(currentSelectedAddress, "cartItems");
 
@@ -32,7 +33,7 @@ function ShoppingCheckout() {
         )
       : 0;
 
-  function handleInitiatePaypalPayment() {
+  function handlePlaceOrder() {
     if (cartItems.length === 0) {
       toast({
         title: "Your cart is empty. Please add items to proceed",
@@ -71,8 +72,7 @@ function ShoppingCheckout() {
         phone: currentSelectedAddress?.phone,
         notes: currentSelectedAddress?.notes,
       },
-      orderStatus: "pending",
-      paymentMethod: "paypal",
+      paymentMethod: "COD",
       paymentStatus: "pending",
       totalAmount: totalCartAmount,
       orderDate: new Date(),
@@ -81,18 +81,37 @@ function ShoppingCheckout() {
       payerId: "",
     };
 
-    dispatch(createNewOrder(orderData)).then((data) => {
-      console.log(data, "sangam");
-      if (data?.payload?.success) {
-        setIsPaymemntStart(true);
-      } else {
-        setIsPaymemntStart(false);
-      }
-    });
-  }
+    setIsProcessingOrder(true);
 
-  if (approvalURL) {
-    window.location.href = approvalURL;
+    // Simulate a brief processing delay
+    setTimeout(() => {
+      dispatch(createNewOrder(orderData)).then((data) => {
+        console.log(data, "order response");
+        if (data?.payload?.success) {
+          // Show success message
+          toast({
+            title: "Order placed successfully!",
+            description: `Your order of $${totalCartAmount} will be delivered in 5-7 business days. Payment will be collected on delivery (Cash on Delivery).`,
+          });
+
+          // Clear the cart
+          dispatch(fetchCartItems(user?.id));
+
+          // Redirect to orders page after 2 seconds
+          setTimeout(() => {
+            setIsProcessingOrder(false);
+            navigate("/shop/account");
+          }, 2000);
+        } else {
+          setIsProcessingOrder(false);
+          toast({
+            title: "Failed to place order",
+            description: data?.payload?.message || "Please try again.",
+            variant: "destructive",
+          });
+        }
+      });
+    }, 1000);
   }
 
   return (
@@ -118,10 +137,14 @@ function ShoppingCheckout() {
             </div>
           </div>
           <div className="mt-4 w-full">
-            <Button onClick={handleInitiatePaypalPayment} className="w-full">
-              {isPaymentStart
-                ? "Processing Paypal Payment..."
-                : "Checkout with Paypal"}
+            <Button
+              onClick={handlePlaceOrder}
+              className="w-full"
+              disabled={isProcessingOrder}
+            >
+              {isProcessingOrder
+                ? "Processing Order..."
+                : "Place Order (Cash on Delivery)"}
             </Button>
           </div>
         </div>

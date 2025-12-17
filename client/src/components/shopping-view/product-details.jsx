@@ -1,4 +1,4 @@
-import { StarIcon } from "lucide-react";
+import { StarIcon, Minus, Plus } from "lucide-react";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent } from "../ui/dialog";
@@ -16,6 +16,7 @@ import { addReview, getReviews } from "@/store/shop/review-slice";
 function ProductDetailsDialog({ open, setOpen, productDetails }) {
   const [reviewMsg, setReviewMsg] = useState("");
   const [rating, setRating] = useState(0);
+  const [quantity, setQuantity] = useState(1);
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
   const { cartItems } = useSelector((state) => state.shopCart);
@@ -38,9 +39,9 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
       );
       if (indexOfCurrentItem > -1) {
         const getQuantity = getCartItems[indexOfCurrentItem].quantity;
-        if (getQuantity + 1 > getTotalStock) {
+        if (getQuantity + quantity > getTotalStock) {
           toast({
-            title: `Only ${getQuantity} quantity can be added for this item`,
+            title: `Only ${getTotalStock - getQuantity} more can be added for this item`,
             variant: "destructive",
           });
 
@@ -48,20 +49,47 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
         }
       }
     }
+
+    if (quantity > getTotalStock) {
+      toast({
+        title: `Only ${getTotalStock} items available in stock`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     dispatch(
       addToCart({
         userId: user?.id,
         productId: getCurrentProductId,
-        quantity: 1,
+        quantity: quantity,
       })
     ).then((data) => {
       if (data?.payload?.success) {
         dispatch(fetchCartItems(user?.id));
         toast({
-          title: "Product is added to cart",
+          title: `${quantity} item(s) added to cart`,
         });
+        setQuantity(1); // Reset quantity after adding to cart
       }
     });
+  }
+
+  function handleQuantityChange(action) {
+    if (action === "increment") {
+      if (quantity < productDetails?.totalStock) {
+        setQuantity(quantity + 1);
+      } else {
+        toast({
+          title: "Maximum stock reached",
+          variant: "destructive",
+        });
+      }
+    } else if (action === "decrement") {
+      if (quantity > 1) {
+        setQuantity(quantity - 1);
+      }
+    }
   }
 
   function handleDialogClose() {
@@ -69,9 +97,26 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
     dispatch(setProductDetails());
     setRating(0);
     setReviewMsg("");
+    setQuantity(1);
   }
 
   function handleAddReview() {
+    if (rating === 0) {
+      toast({
+        title: "Please select a rating",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (reviewMsg.trim() === "") {
+      toast({
+        title: "Please write a review",
+        variant: "destructive",
+      });
+      return;
+    }
+
     dispatch(
       addReview({
         productId: productDetails?._id,
@@ -81,14 +126,28 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
         reviewValue: rating,
       })
     ).then((data) => {
-      if (data.payload.success) {
+      if (data?.payload?.success) {
         setRating(0);
         setReviewMsg("");
         dispatch(getReviews(productDetails?._id));
         toast({
           title: "Review added successfully!",
         });
+      } else {
+        toast({
+          title: data?.payload?.message || "Failed to submit review",
+          description: data?.payload?.message === "You need to purchase product to review it."
+            ? "You must purchase this product before leaving a review."
+            : "Please try again later.",
+          variant: "destructive",
+        });
       }
+    }).catch(() => {
+      toast({
+        title: "Error submitting review",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
     });
   }
 
@@ -119,7 +178,7 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
         <div className="">
           <div>
             <h1 className="text-3xl font-extrabold">{productDetails?.title}</h1>
-            <p className="text-muted-foreground text-2xl mb-5 mt-4">
+            <p className="text-muted-foreground text-md mb-5 mt-4">
               {productDetails?.description}
             </p>
           </div>
@@ -145,6 +204,38 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
               ({averageReview.toFixed(2)})
             </span>
           </div>
+
+          {/* Quantity Selector */}
+          {productDetails?.totalStock > 0 && (
+            <div className="mt-5">
+              <Label className="text-sm font-medium mb-2 block">Quantity</Label>
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleQuantityChange("decrement")}
+                  disabled={quantity === 1}
+                >
+                  <Minus className="h-4 w-4" />
+                </Button>
+                <span className="text-xl font-semibold w-12 text-center">
+                  {quantity}
+                </span>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleQuantityChange("increment")}
+                  disabled={quantity >= productDetails?.totalStock}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+                <span className="text-sm text-muted-foreground ml-2">
+                  {productDetails?.totalStock} available
+                </span>
+              </div>
+            </div>
+          )}
+
           <div className="mt-5 mb-5">
             {productDetails?.totalStock === 0 ? (
               <Button className="w-full opacity-60 cursor-not-allowed">
@@ -170,7 +261,7 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
             <div className="grid gap-6">
               {reviews && reviews.length > 0 ? (
                 reviews.map((reviewItem) => (
-                  <div className="flex gap-4">
+                  <div className="flex gap-4" key={reviewItem._id}>
                     <Avatar className="w-10 h-10 border">
                       <AvatarFallback>
                         {reviewItem?.userName[0].toUpperCase()}
@@ -209,7 +300,7 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
               />
               <Button
                 onClick={handleAddReview}
-                disabled={reviewMsg.trim() === ""}
+                disabled={reviewMsg.trim() === "" || rating === 0}
               >
                 Submit
               </Button>

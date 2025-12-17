@@ -24,7 +24,6 @@ const initialFormData = {
   title: "",
   description: "",
   category: "",
-  brand: "",
   price: "",
   salePrice: "",
   totalStock: "",
@@ -51,7 +50,10 @@ function AdminProducts() {
       ? dispatch(
           editProduct({
             id: currentEditedId,
-            formData,
+            formData: {
+              ...formData,
+              image: uploadedImageUrl,
+            },
           })
         ).then((data) => {
           console.log(data, "edit");
@@ -61,6 +63,11 @@ function AdminProducts() {
             setFormData(initialFormData);
             setOpenCreateProductsDialog(false);
             setCurrentEditedId(null);
+            setUploadedImageUrl("");
+            setImageFile(null);
+            toast({
+              title: "Product edited successfully",
+            });
           }
         })
       : dispatch(
@@ -74,6 +81,7 @@ function AdminProducts() {
             setOpenCreateProductsDialog(false);
             setImageFile(null);
             setFormData(initialFormData);
+            setUploadedImageUrl("");
             toast({
               title: "Product add successfully",
             });
@@ -91,9 +99,9 @@ function AdminProducts() {
 
   function isFormValid() {
     return Object.keys(formData)
-      .filter((currentKey) => currentKey !== "averageReview")
+      .filter((currentKey) => currentKey !== "averageReview" && currentKey !== "image" && currentKey !== "salePrice")
       .map((key) => formData[key] !== "")
-      .every((item) => item);
+      .every((item) => item) && uploadedImageUrl !== "";
   }
 
   useEffect(() => {
@@ -118,6 +126,7 @@ function AdminProducts() {
                 setCurrentEditedId={setCurrentEditedId}
                 product={productItem}
                 handleDelete={handleDelete}
+                setUploadedImageUrl={setUploadedImageUrl}
               />
             ))
           : null}
@@ -128,6 +137,8 @@ function AdminProducts() {
           setOpenCreateProductsDialog(false);
           setCurrentEditedId(null);
           setFormData(initialFormData);
+          setUploadedImageUrl("");
+          setImageFile(null);
         }}
       >
         <SheetContent side="right" className="overflow-auto">

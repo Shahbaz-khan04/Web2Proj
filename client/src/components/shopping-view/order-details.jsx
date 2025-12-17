@@ -1,5 +1,4 @@
 import { useSelector } from "react-redux";
-import { Badge } from "../ui/badge";
 import { DialogContent } from "../ui/dialog";
 import { Label } from "../ui/label";
 import { Separator } from "../ui/separator";
@@ -30,22 +29,6 @@ function ShoppingOrderDetailsView({ orderDetails }) {
           <div className="flex mt-2 items-center justify-between">
             <p className="font-medium">Payment Status</p>
             <Label>{orderDetails?.paymentStatus}</Label>
-          </div>
-          <div className="flex mt-2 items-center justify-between">
-            <p className="font-medium">Order Status</p>
-            <Label>
-              <Badge
-                className={`py-1 px-3 ${
-                  orderDetails?.orderStatus === "confirmed"
-                    ? "bg-green-500"
-                    : orderDetails?.orderStatus === "rejected"
-                    ? "bg-red-600"
-                    : "bg-black"
-                }`}
-              >
-                {orderDetails?.orderStatus}
-              </Badge>
-            </Label>
           </div>
         </div>
         <Separator />

@@ -17,7 +17,6 @@ import {
   getOrderDetails,
   resetOrderDetails,
 } from "@/store/shop/order-slice";
-import { Badge } from "../ui/badge";
 
 function ShoppingOrders() {
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
@@ -50,7 +49,6 @@ function ShoppingOrders() {
             <TableRow>
               <TableHead>Order ID</TableHead>
               <TableHead>Order Date</TableHead>
-              <TableHead>Order Status</TableHead>
               <TableHead>Order Price</TableHead>
               <TableHead>
                 <span className="sr-only">Details</span>
@@ -63,19 +61,6 @@ function ShoppingOrders() {
                   <TableRow>
                     <TableCell>{orderItem?._id}</TableCell>
                     <TableCell>{orderItem?.orderDate.split("T")[0]}</TableCell>
-                    <TableCell>
-                      <Badge
-                        className={`py-1 px-3 ${
-                          orderItem?.orderStatus === "confirmed"
-                            ? "bg-green-500"
-                            : orderItem?.orderStatus === "rejected"
-                            ? "bg-red-600"
-                            : "bg-black"
-                        }`}
-                      >
-                        {orderItem?.orderStatus}
-                      </Badge>
-                    </TableCell>
                     <TableCell>${orderItem?.totalAmount}</TableCell>
                     <TableCell>
                       <Dialog

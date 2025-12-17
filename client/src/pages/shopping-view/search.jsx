@@ -11,13 +11,14 @@ import {
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 
 function SearchProducts() {
   const [keyword, setKeyword] = useState("");
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const dispatch = useDispatch();
-  const { searchResults } = useSelector((state) => state.shopSearch);
+  const { searchResults, isLoading } = useSelector((state) => state.shopSearch);
   const { productDetails } = useSelector((state) => state.shopProducts);
 
   const { user } = useSelector((state) => state.auth);
@@ -97,18 +98,29 @@ function SearchProducts() {
           />
         </div>
       </div>
-      {!searchResults.length ? (
-        <h1 className="text-5xl font-extrabold">No result found!</h1>
-      ) : null}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-        {searchResults.map((item) => (
-          <ShoppingProductTile
-            handleAddtoCart={handleAddtoCart}
-            product={item}
-            handleGetProductDetails={handleGetProductDetails}
-          />
-        ))}
-      </div>
+
+      {isLoading ? (
+        <div className="flex justify-center items-center py-20">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        </div>
+      ) : (
+        <>
+          {!searchResults.length && keyword.trim() !== "" && keyword.trim().length > 3 ? (
+            <h1 className="text-5xl font-extrabold text-center">No result found!</h1>
+          ) : null}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+            {searchResults.map((item) => (
+              <ShoppingProductTile
+                key={item._id}
+                handleAddtoCart={handleAddtoCart}
+                product={item}
+                handleGetProductDetails={handleGetProductDetails}
+              />
+            ))}
+          </div>
+        </>
+      )}
+
       <ProductDetailsDialog
         open={openDetailsDialog}
         setOpen={setOpenDetailsDialog}

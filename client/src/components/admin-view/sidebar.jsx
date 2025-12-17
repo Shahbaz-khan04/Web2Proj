@@ -1,5 +1,4 @@
 import {
-  BadgeCheck,
   ChartNoAxesCombined,
   LayoutDashboard,
   ShoppingBasket,
@@ -20,12 +19,6 @@ const adminSidebarMenuItems = [
     label: "Products",
     path: "/admin/products",
     icon: <ShoppingBasket />,
-  },
-  {
-    id: "orders",
-    label: "Orders",
-    path: "/admin/orders",
-    icon: <BadgeCheck />,
   },
 ];
 
