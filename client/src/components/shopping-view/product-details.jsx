@@ -134,20 +134,17 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
           title: "Review added successfully!",
         });
       } else {
+        const errorMessage = data?.payload?.message || "Failed to submit review";
         toast({
-          title: data?.payload?.message || "Failed to submit review",
-          description: data?.payload?.message === "You need to purchase product to review it."
+          title: errorMessage,
+          description: errorMessage === "You need to purchase product to review it."
             ? "You must purchase this product before leaving a review."
+            : errorMessage === "You already reviewed this product!"
+            ? "You have already submitted a review for this product."
             : "Please try again later.",
           variant: "destructive",
         });
       }
-    }).catch(() => {
-      toast({
-        title: "Error submitting review",
-        description: "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      });
     });
   }
 

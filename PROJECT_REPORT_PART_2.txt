@@ -1,0 +1,313 @@
+================================================================================
+        MERN E-COMMERCE APPLICATION - COMPREHENSIVE PROJECT REPORT
+                            PART 2 OF 5
+                DATABASE MODELS AND API ENDPOINTS
+================================================================================
+
+TABLE OF CONTENTS - PART 2
+--------------------------
+1. Database Models (MongoDB Schemas)
+2. API Endpoints Documentation
+3. API Request/Response Examples
+
+
+================================================================================
+1. DATABASE MODELS (MONGODB SCHEMAS)
+================================================================================
+
+1.1 USER MODEL
+--------------
+File: /server/models/User.js
+
+Purpose: Stores user account information for authentication and authorization
+
+Schema Definition:
+{
+  userName: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  password: {
+    type: String,
+    required: true
+  },
+  role: {
+    type: String,
+    default: "user"
+  }
+}
+
+1.2 PRODUCT MODEL
+-----------------
+File: /server/models/Product.js
+
+Purpose: Stores product information for the e-commerce catalog
+
+Schema Definition:
+{
+  image: {
+    type: String
+  },
+  title: {
+    type: String
+  },
+  description: {
+    type: String
+  },
+  category: {
+    type: String
+    // Values: "men", "women", "kids", "accessories", "footwear"
+  },
+  brand: {
+    type: String
+  },
+  price: {
+    type: Number
+  },
+  salePrice: {
+    type: Number
+  },
+  totalStock: {
+    type: Number
+  },
+  averageReview: {
+    type: Number,
+    default: 0
+  }
+}
+
+1.3 ORDER MODEL
+---------------
+File: /server/models/Order.js
+
+Purpose: Stores complete order information including items and delivery details
+
+Schema Definition:
+{
+  userId: {
+    type: String
+  },
+  cartId: {
+    type: String
+  },
+  cartItems: [
+    {
+      productId: String,
+      title: String,
+      image: String,
+      price: String,
+      quantity: Number
+    }
+  ],
+  addressInfo: {
+    addressId: String,
+    address: String,
+    city: String,
+    pincode: String,
+    phone: String,
+    notes: String
+  },
+  orderStatus: {
+    type: String,
+    default: "pending"
+  },
+  paymentMethod: {
+    type: String
+  },
+  paymentStatus: {
+    type: String
+  },
+  totalAmount: {
+    type: Number
+  },
+  orderDate: {
+    type: Date
+  },
+  orderUpdateDate: {
+    type: Date
+  },
+  paymentId: {
+    type: String
+  },
+  payerId: {
+    type: String
+  }
+}
+
+1.4 CART MODEL
+--------------
+File: /server/models/Cart.js
+
+Purpose: Stores shopping cart items for each user
+
+Schema Definition:
+{
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true
+  },
+  items: [
+    {
+      productId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Product",
+        required: true
+      },
+      quantity: {
+        type: Number,
+        required: true,
+        min: 1
+      }
+    }
+  ]
+}
+
+
+1.5 ADDRESS MODEL
+-----------------
+File: /server/models/Address.js
+
+Purpose: Stores delivery addresses for users
+
+Schema Definition:
+{
+  userId: {
+    type: String,
+    required: true
+  },
+  address: {
+    type: String,
+    required: true
+  },
+  city: {
+    type: String,
+    required: true
+  },
+  pincode: {
+    type: String,
+    required: true
+  },
+  phone: {
+    type: String,
+    required: true
+  },
+  notes: {
+    type: String
+  }
+}
+
+
+1.6 REVIEW MODEL
+----------------
+File: /server/models/Review.js
+
+Purpose: Stores product reviews and ratings from verified purchasers
+
+Schema Definition:
+{
+  productId: {
+    type: String,
+    required: true
+  },
+  userId: {
+    type: String,
+    required: true
+  },
+  userName: {
+    type: String,
+    required: true
+  },
+  reviewMessage: {
+    type: String,
+    required: true
+  },
+  reviewValue: {
+    type: Number,
+    required: true,
+    min: 1,
+    max: 5
+  }
+}
+
+
+1.7 FEATURE MODEL
+-----------------
+File: /server/models/Feature.js
+
+Purpose: Stores banner/carousel images for homepage
+
+Schema Definition:
+{
+  image: {
+    type: String,
+    required: true
+  }
+}
+
+================================================================================
+2. API ENDPOINTS DOCUMENTATION
+================================================================================
+
+2.1 ADMIN PRODUCT ENDPOINTS
+----------------------------
+
+BASE URL: /api/admin/products
+
+1. UPLOAD PRODUCT IMAGE
+   Method: POST
+   Endpoint: /api/admin/products/upload-image
+   Process:
+   - Multer processes file upload (memory storage)
+   - Convert buffer to base64
+   - Upload to Cloudinary
+   - Return Cloudinary URL
+
+2. ADD NEW PRODUCT
+   Method: POST
+   Endpoint: /api/admin/products/add
+
+3. FETCH ALL PRODUCTS (Admin)
+   Method: GET
+   Endpoint: /api/admin/products/get
+
+4. EDIT PRODUCT
+   Method: PUT
+   Endpoint: /api/admin/products/edit/:id
+
+5. DELETE PRODUCT
+   Method: DELETE
+   Endpoint: /api/admin/products/delete/:id
+
+
+2.4 CART ENDPOINT
+------------------
+
+BASE URL: /api/shop/cart
+
+1. ADD TO CART
+   Method: POST
+   Endpoint: /api/shop/cart/Add
+   
+
+2.6 ORDER ENDPOINTS
+-------------------
+
+BASE URL: /api/shop/order
+
+1. CREATE ORDER
+   Method: POST
+   Endpoint: /api/shop/order/create
+
+   Process:
+   - Create new order with provided data
+   - Reduce stock for each product in order
+   - Validate stock availability
+   - Delete cart after successful order
+   - Return order ID
